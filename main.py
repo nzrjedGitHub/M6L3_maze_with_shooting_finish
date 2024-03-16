@@ -4,17 +4,17 @@ from pygame import *
 #клас-батько для інших спрайтів
 class GameSprite(sprite.Sprite):
    #конструктор класу
-   def __init__(self, player_image, player_x, player_y, size_x, size_y):
+   def __init__(self, sprite_image, sprite_x, sprite_y, size_x, size_y):
        # Викликаємо конструктор класу (Sprite):
        sprite.Sprite.__init__(self)
        #кожен спрайт повинен зберігати властивість image - зображення
-       self.image = transform.scale(image.load(player_image), (size_x, size_y))
+       self.image = transform.scale(image.load(sprite_image), (size_x, size_y))
 
 
        #кожен спрайт повинен зберігати властивість rect - прямокутник, в який він вписаний
        self.rect = self.image.get_rect()
-       self.rect.x = player_x
-       self.rect.y = player_y
+       self.rect.x = sprite_x
+       self.rect.y = sprite_y
    #метод, що малює героя на вікні
    def reset(self):
        window.blit(self.image, (self.rect.x, self.rect.y))
@@ -24,9 +24,9 @@ class GameSprite(sprite.Sprite):
 
 class Player(GameSprite):
    #метод, у якому реалізовано управління спрайтом за кнопками стрілочкам клавіатури
-   def __init__(self, player_image, player_x, player_y, size_x, size_y, player_x_speed,player_y_speed):
+   def __init__(self, sprite_image, sprite_x, sprite_y, size_x, size_y, player_x_speed,player_y_speed):
        # Викликаємо конструктор класу (Sprite):
-       GameSprite.__init__(self, player_image, player_x, player_y, size_x, size_y)
+       GameSprite.__init__(self, sprite_image, sprite_x, sprite_y, size_x, size_y)
 
 
        self.x_speed = player_x_speed
@@ -34,7 +34,7 @@ class Player(GameSprite):
    ''' переміщає персонажа, застосовуючи поточну горизонтальну та вертикальну швидкість'''
    def update(self):
        # Спершу рух по горизонталі
-       if packman.rect.x <= win_width-80 and packman.x_speed > 0 or packman.rect.x >= 0 and packman.x_speed < 0:
+       if player.rect.x <= win_width-80 and player.x_speed > 0 or player.rect.x >= 0 and player.x_speed < 0:
            self.rect.x += self.x_speed
            # якщо зайшли за стінку, то встанемо впритул до стіни
        platforms_touched = sprite.spritecollide(self, barriers, False)
@@ -44,7 +44,7 @@ class Player(GameSprite):
        elif self.x_speed < 0: # йдемо ліворуч, ставимо лівий край персонажа впритул до правого краю стіни
            for p in platforms_touched:
                self.rect.left = max(self.rect.left, p.rect.right) # якщо торкнулися кількох стін, то лівий край - максимальний
-       if packman.rect.y <= win_height-80 and packman.y_speed > 0 or packman.rect.y >= 0 and packman.y_speed < 0:
+       if player.rect.y <= win_height-80 and player.y_speed > 0 or player.rect.y >= 0 and player.y_speed < 0:
            self.rect.y += self.y_speed
        # якщо зайшли за стінку, то встанемо впритул до стіни
        platforms_touched = sprite.spritecollide(self, barriers, False)
@@ -67,7 +67,7 @@ win_width = 700
 win_height = 500
 display.set_caption("Лабіринт")
 window = display.set_mode((win_width, win_height))
-back = (119, 210, 223) # задаємо колір відповідно до колірної схеми RGB
+background = transform.scale(image.load("starsbg.jpg"), (win_width, win_height))
 
 
 #Створюємо групу для стін
@@ -85,7 +85,7 @@ barriers.add(w2)
 
 
 #створюємо спрайти
-packman = Player('ufo_1.png', 5, win_height - 80, 80, 80, 0, 0)
+player = Player('ufo_1.png', 5, win_height - 80, 80, 80, 0, 0)
 monster = GameSprite('monster_4.png', win_width - 80, 180, 80, 80)
 final_sprite = GameSprite('Asset 28@4x.png', win_width - 85, win_height - 100, 80, 80)
 
@@ -102,25 +102,25 @@ while run:
            run = False
        elif e.type == KEYDOWN:
            if e.key == K_LEFT:
-               packman.x_speed = -5
+               player.x_speed = -5
            elif e.key == K_RIGHT:
-               packman.x_speed = 5
+               player.x_speed = 5
            elif e.key == K_UP :
-               packman.y_speed = -5
+               player.y_speed = -5
            elif e.key == K_DOWN :
-               packman.y_speed = 5
+               player.y_speed = 5
        elif e.type == KEYUP:
            if e.key == K_LEFT :
-               packman.x_speed = 0
+               player.x_speed = 0
            elif e.key == K_RIGHT:
-               packman.x_speed = 0
+               player.x_speed = 0
            elif e.key == K_UP:
-               packman.y_speed = 0
+               player.y_speed = 0
            elif e.key == K_DOWN:
-               packman.y_speed = 0
+               player.y_speed = 0
 
    if not finish:
-       window.fill(back)#зафарбовуємо вікно кольором
+       window.blit(background, (0,0))#зафарбовуємо вікно кольором
        #малюємо об'єкти
        # w1.reset()
        # w2.reset()
@@ -128,11 +128,11 @@ while run:
   
    monster.reset()
    final_sprite.reset()
-   packman.reset()
+   player.reset()
    #включаємо рух
-   packman.update()
+   player.update()
    #Перевірка зіткнення героя з ворогом та стінами
-   if sprite.collide_rect(packman, monster):
+   if sprite.collide_rect(player, monster):
        finish = True
        # обчислюємо ставлення
        img = image.load('gameover.jpg')
@@ -141,7 +141,7 @@ while run:
        window.blit(transform.scale(img, (win_height * d, win_height)), (90, 0))
 
 
-   if sprite.collide_rect(packman, final_sprite):
+   if sprite.collide_rect(player, final_sprite):
        finish = True
        img = image.load('thumb.jpg')
        window.fill((255, 255, 255))
