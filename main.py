@@ -169,6 +169,7 @@ while run:
        barriers.draw(window)
        bullets.draw(window)
        sprite.groupcollide(bullets, barriers, True, False)
+       sprite.groupcollide(monsters, bullets, True, True)
 
     #    monster.reset()
        final_sprite.reset()
